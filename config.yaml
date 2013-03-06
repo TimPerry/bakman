@@ -1,3 +1,4 @@
 backup_loc: /backups
 db_backups_folder_name: db_files
 file_backups_folder_name: files
+file_backups_latest_backup_folder_name: live_files

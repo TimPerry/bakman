@@ -1,8 +1,0 @@
-springfield:
-  ssh_username: root
-  ssh_password: password
-  ssh_port: 22
-  ssh_host: 192.168.1.250
-  remote_dir: /var/www/sites
-  db_username: username
-  db_password: password

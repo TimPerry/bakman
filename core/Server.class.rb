@@ -1,6 +1,8 @@
 require 'core/Utils.module.rb'
 require 'net/ssh'
 require 'net/scp'
+require 'pty'
+require 'expect'
 
 class Server
   
@@ -18,8 +20,8 @@ class Server
     
   def backup
     
-    backup_db
-    backup_files
+    backup_db if Utils::get_config_option( 'should_backup_backups' )
+    backup_files if Utils::get_config_option( 'should_backup_files' )
     
   end
   
@@ -84,42 +86,35 @@ class Server
   def backup_files
   
     # backup the backup
-    #filename=${folders[1]}/${dow}.7z
-    #backup_loc=${folders[2]}
+    daily_filename = Utils::get_file_backup_filename( self, 'daily' )
+    weekly_filename = Utils::get_file_backup_filename( self, 'weekly' )
+    monthly_filename = Utils::get_file_backup_filename( self, 'monthly' )
+    
+    # backup location
+    filestore_loc = Utils::get_filestore_loc( self )
     
     # remove the old zip
-    #rm -rf $filename
-    #7za a -t7z $filename $backup_loc/*
+    FileUtils.rm( daily_filename ) if File.exists?( daily_filename )
 
-    # backup them files!
-    #rsync -az --delete -e "ssh -p $server_port" root@${server_ip}:${server_path} $backup_loc
+    # uses expect + rsync to backup the files
+    cmd = "rsync -az --delete -e 'ssh -p #{self.config[ 'ssh_port' ]} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' #{self.config[ 'ssh_username' ]}@#{self.config[ 'ssh_host' ]}:#{self.config[ 'remote_dir' ]} #{filestore_loc}"
+      
+    PTY.spawn( cmd ) do | o, i |
+            
+      o.expect(/Password/, 2)
+      i.puts "#{self.config[ 'ssh_password' ]}\r\n"
+      o.readlines      
+     
+    end
     
-    # if its the first of the month copy the zip ( dom == 1)
-    # cp filename begin_of_month.7z
+    # zip up the files
+    system "7za a -t7z #{daily_filename} #{filestore_loc}/*"
+      
+    # first of month - create a copy
+    FileUtils.cp( daily_filename, monthly_filename ) if Utils::get_dom == 1
     
-    # if its a monday copy ( dow == 1 )
-    
-    # folder structure
-    #
-    # monthly
-    #   jan_2013.7z
-    #   feb_2013.7z
-    #
-    # weekly
-    #   first_week_of_month.7z
-    #   second_week_of_month.7z
-    #   third_week_of_month.7z
-    #   four_week_of_month.7z
-    #   fith_week_of_month.7z90
-    #
-    # daily
-    #   monday.7z
-    #   tuesday.7z
-    #   wednesday.7z
-    #   thursday.7z
-    #   friday.7z
-    #   saturday.7z
-    #   sunday.7z
+    # its a sunday - create a copy
+    FileUtils.cp( daily_filename, weekly_filename ) if Utils::get_dow == 0
     
   end
   

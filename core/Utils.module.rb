@@ -16,10 +16,53 @@ module Utils
     "#{folder}/#{db_name}_#{get_dom}.sql.gz".strip
     
   end
+
+  def self.get_file_backup_filename( server, type = 'weekly' )
     
-  def self.delete_oldest_backup( server_name )
-    month = Time.now.months_since( -6 ).
+    folder = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('file_backups_folder_name')}/#{type}"
+    FileUtils.mkdir_p( folder ) unless File.exists?( folder ) && File.directory?( folder )
+
+    case type
+    
+      when 'daily'
+        return "#{folder}/#{Utils::get_dow}.7z"
+      
+      when 'weekly'
+        return "#{folder}/week#{Utils::get_wom}.7z"
+        
+      when 'monthly'
+        return "#{folder}/#{Utils::get_moy}_#{Utils::get_y}.7z"
+    
+    end
+    
+  end
+  
+  def self.get_filestore_loc( server )
+    
+    folder = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('file_backups_folder_name')}/filestore"
+    FileUtils.mkdir_p( folder ) unless File.exists?( folder ) && File.directory?( folder )
+    
+    folder.strip
+    
+  end
+    
+  def self.delete_oldest_backup( server )
+   
+    month = Time.now.months_since( -6 ).month
     FileUtils.rm( "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('db_backups_folder_name')}/#{month}.7z" )
+    
+  end
+
+  def self.get_y
+    Time.new.year
+  end
+  
+  def self.get_moy
+    Time.new.month
+  end
+  
+  def self.get_wom
+    ( Time.new.day / 7 ).ceil
   end
     
   def self.get_dom

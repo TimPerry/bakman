@@ -103,9 +103,9 @@ class Server
       
     PTY.spawn( cmd ) do | o, i |
             
-      o.expect(/Password/)
+      o.expect(/password/i)
       i.puts "#{self.config[ 'ssh_password' ]}\r\n"
-      o.readlines      
+      o.readlines
      
     end
     
@@ -113,16 +113,27 @@ class Server
     
     puts "Compressing backups...\n\n"
     
-    # zip up the files
-    puts "7za a -t7z #{daily_filename} #{filestore_loc}/*"
+    begin
+    
+      # zip up the files
+      puts "7za a -t7z #{daily_filename} #{filestore_loc}/*"
       
-    # first of month - create a copy
-    FileUtils.cp( daily_filename, monthly_filename ) if Utils::get_dom == 1
+      # first of month - create a copy
+      FileUtils.cp( daily_filename, monthly_filename ) if Utils::get_dom == 1
     
-    # its a sunday - create a copy
-    FileUtils.cp( daily_filename, weekly_filename ) if Utils::get_dow == 0
+      # its a sunday - create a copy
+      FileUtils.cp( daily_filename, weekly_filename ) if Utils::get_dow == 0
     
-    puts "Done.\n"
+      puts "Done.\n"
+    
+    rescue Exception => e
+          
+      puts "Failed to compress, install 7zip please!\n\n";
+      puts "OSX: brew install p7zip\n"
+      puts "YUM: yum install p7zip\n"
+      puts "APT: apt-get install p7zip\n"
+          
+    end
     
   end
   

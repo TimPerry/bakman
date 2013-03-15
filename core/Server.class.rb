@@ -20,7 +20,7 @@ class Server
     
   def backup
     
-    backup_db if Utils::get_config_option( 'should_backup_backups' )
+    backup_db if Utils::get_config_option( 'should_backup_databases' )
     backup_files if Utils::get_config_option( 'should_backup_files' )
     
   end
@@ -96,25 +96,33 @@ class Server
     # remove the old zip
     FileUtils.rm( daily_filename ) if File.exists?( daily_filename )
 
+    puts "Backing up remote dir: #{self.config[ 'remote_dir' ]} to #{filestore_loc}...\n\n"
+
     # uses expect + rsync to backup the files
     cmd = "rsync -az --delete -e 'ssh -p #{self.config[ 'ssh_port' ]} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' #{self.config[ 'ssh_username' ]}@#{self.config[ 'ssh_host' ]}:#{self.config[ 'remote_dir' ]} #{filestore_loc}"
       
     PTY.spawn( cmd ) do | o, i |
             
-      o.expect(/Password/, 2)
+      o.expect(/Password/)
       i.puts "#{self.config[ 'ssh_password' ]}\r\n"
       o.readlines      
      
     end
     
+    puts "Done.\n"
+    
+    puts "Compressing backups...\n\n"
+    
     # zip up the files
-    system "7za a -t7z #{daily_filename} #{filestore_loc}/*"
+    puts "7za a -t7z #{daily_filename} #{filestore_loc}/*"
       
     # first of month - create a copy
     FileUtils.cp( daily_filename, monthly_filename ) if Utils::get_dom == 1
     
     # its a sunday - create a copy
     FileUtils.cp( daily_filename, weekly_filename ) if Utils::get_dow == 0
+    
+    puts "Done.\n"
     
   end
   

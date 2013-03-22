@@ -2,7 +2,13 @@ require "yaml"
 require "fileutils"
 
 module Utils
-  
+    
+  @@y = nil;
+  @@moy = nil;
+  @@wom = nil;
+  @@dom = nil;
+  @@dow = nil;
+    
   def self.get_remote_db_filename( db_name )    
     "/tmp/#{db_name}_#{get_dom}.sql.gz"
   end
@@ -54,23 +60,28 @@ module Utils
   end
 
   def self.get_y
-    Time.new.year
+    @@y ||= Time.new.year
+    @@y
   end
   
   def self.get_moy
-    Time.new.month
+    @@moy ||= Time.new.month
+    @@moy
   end
   
   def self.get_wom
-    ( Time.new.day / 7 ).ceil
+    @@wom ||= ( Time.new.day / 7 ).ceil
+    @@wom
   end
     
   def self.get_dom
-    Time.new.day
+    @@dom ||= Time.new.day
+    @@dom
   end
   
   def self.get_dow
-     Time.new.wday
+     @@dow ||= Time.new.wday
+     @@dow
   end
   
   # gets the config option if it exists

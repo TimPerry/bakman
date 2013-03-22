@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 require 'yaml'
-require 'core/Server.class.rb'
+require_relative 'Server.class.rb'
 
 class Bakman
   

@@ -1,4 +1,4 @@
-require 'core/Utils.module.rb'
+require_relative 'Utils.module.rb'
 require 'net/ssh'
 require 'net/scp'
 require 'pty'
@@ -28,13 +28,14 @@ class Server
   private
   
   def backup_db
-    
-    begin
-      
-      Net::SSH.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ] ) do | ssh |
-        
+
+    begin    
+     
+      Net::SSH.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ], :port => self.config[ 'ssh_port' ] ) do | ssh |
+	
         # get a list of the databases on the server
-        databases = ssh.exec!( "mysql -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} --execute='show databases' | awk '{ print $1 }' | sed 1d" )       
+        databases = ssh.exec!( "mysql -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} --execute='show databases' | awk '{ print $1 }' | sed 1d" )
+        databases = databases.split( /\r?\n/ )
           
         # loop each db
         databases.each do | db |
@@ -54,7 +55,7 @@ class Server
           begin
 
             # scp to files to the local dir        
-            Net::SCP.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ] ) do |scp|
+            Net::SCP.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ], :port => self.config[ 'ssh_port' ] ) do |scp|
 
               # scp to files to the local dir        
               scp.download!( remote_filename, local_filename )
@@ -76,7 +77,7 @@ class Server
       end
     
     rescue Exception => e
-          
+
       puts "Failed to connect to #{self.config[ 'ssh_host' ]}"
           
     end
@@ -100,23 +101,30 @@ class Server
 
     # uses expect + rsync to backup the files
     cmd = "rsync -az --delete -e 'ssh -p #{self.config[ 'ssh_port' ]} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' #{self.config[ 'ssh_username' ]}@#{self.config[ 'ssh_host' ]}:#{self.config[ 'remote_dir' ]} #{filestore_loc}"
-      
+
     PTY.spawn( cmd ) do | o, i |
             
-      o.expect(/password/i)
-      i.puts "#{self.config[ 'ssh_password' ]}\r\n"
-      o.readlines
+      begin
+
+        o.expect(/password/i)
+        i.puts "#{self.config[ 'ssh_password' ]}\r\n"
+        o.readlines
+
+      rescue Errno::EIO
+        #puts "IO Error occored"
+      end
      
     end
-    
+
+      return
     puts "Done.\n"
-    
     puts "Compressing backups...\n\n"
     
     begin
     
       # zip up the files
       puts "7za a -t7z #{daily_filename} #{filestore_loc}/*"
+      system( "7za a -t7z #{daily_filename} #{filestore_loc}/*")
       
       # first of month - create a copy
       FileUtils.cp( daily_filename, monthly_filename ) if Utils::get_dom == 1

@@ -8,9 +8,9 @@ program_installed() {
 # install libs
 if program_installed apt-get ; then apt-get install ruby rubygems p7zip-full
 elif program_installed yum ; then yum install ruby rubygems p7zip-full
-elif program_installed brew ; then brew install ruby p7zip-full
+elif program_installed brew ; then brew install ruby p7zip
 else
-  echo 'No package manager available, please install the following manually  ruby rubygems p7zip-full'
+  echo 'No package manager available, please install the following manually: ruby rubygems p7zip-full'
   exit 2
 fi
 

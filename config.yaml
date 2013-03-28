@@ -4,3 +4,4 @@ file_backups_folder_name: files
 file_backups_latest_backup_folder_name: live_files
 should_backup_files: true
 should_backup_databases: true
+months_to_keep_backups: 6

@@ -46,6 +46,19 @@ class Server
           # get out files names
           local_filename =  Utils::get_local_db_filename( db, self )
           remote_filename = Utils::get_remote_db_filename( db )
+          
+          # backup the backup
+          weekly_filename = Utils::get_local_db_filename( db, self, 'weekly' )
+          monthly_filename = Utils::get_local_db_filename( db, self, 'monthly' )
+          
+          # first of month - create a copy
+          FileUtils.cp( local_filename, monthly_filename ) if Utils::get_dom == 1
+    
+          # its a sunday - create a copy
+          FileUtils.cp( local_filename, weekly_filename ) if Utils::get_dow == 0
+      
+          # Delete older backups
+          Utils::delete_old_db_backups( self, db )
         
           # get mysql to dump the database to file
           ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} --single-transaction | gzip  > #{remote_filename}" )
@@ -78,7 +91,7 @@ class Server
     
     rescue Exception => e
 
-      puts "Failed to connect to #{self.config[ 'ssh_host' ]}"
+      puts "#{e}Failed to connect to #{self.config[ 'ssh_host' ]}"
           
     end
   
@@ -131,7 +144,10 @@ class Server
     
       # its a sunday - create a copy
       FileUtils.cp( daily_filename, weekly_filename ) if Utils::get_dow == 0
-    
+      
+      # Delete older backups
+      Utils::delete_old_file_backups
+      
       puts "Done.\n"
     
     rescue Exception => e

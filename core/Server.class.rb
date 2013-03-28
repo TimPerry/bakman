@@ -43,49 +43,56 @@ class Server
           # tidy up the db name
           db = db.strip
           
-          # get out files names
-          local_filename =  Utils::get_local_db_filename( db, self )
-          remote_filename = Utils::get_remote_db_filename( db )
+          # get the tables
+          tables = ssh.exec!( "mysql -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} --execute='show tables from #{db}' | awk '{ print $1 }' | sed 1d" )
           
-          # backup the backup
-          weekly_filename = Utils::get_local_db_filename( db, self, 'weekly' )
-          monthly_filename = Utils::get_local_db_filename( db, self, 'monthly' )
+          tables.each do | table |
           
-          # first of month - create a copy
-          FileUtils.cp( local_filename, monthly_filename ) if Utils::get_dom == 1
+            # get out files names
+            local_filename =  Utils::get_local_db_filename( db, self )
+            remote_filename = Utils::get_remote_db_filename( db )
+          
+            # backup the backup
+            weekly_filename = Utils::get_local_db_filename( db, self, 'weekly' )
+            monthly_filename = Utils::get_local_db_filename( db, self, 'monthly' )
+          
+            # first of month - create a copy
+            FileUtils.cp( local_filename, monthly_filename ) if Utils::get_dom == 1
     
-          # its a sunday - create a copy
-          FileUtils.cp( local_filename, weekly_filename ) if Utils::get_dow == 0
+            # its a sunday - create a copy
+            FileUtils.cp( local_filename, weekly_filename ) if Utils::get_dow == 0
       
-          # Delete older backups
-          Utils::delete_old_db_backups( self, db )
+            # Delete older backups
+            Utils::delete_old_db_backups( self, db )
         
-          # get mysql to dump the database to file
-          ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} --single-transaction | gzip  > #{remote_filename}" )
+            # get mysql to dump the database to file
+            ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} --single-transaction | gzip  > #{remote_filename}" )
         
-          puts "Downloading #{remote_filename} from #{self.config[ 'ssh_host' ]} to #{local_filename}...\n"
+            puts "Downloading #{remote_filename} from #{self.config[ 'ssh_host' ]} to #{local_filename}...\n"
         
-          begin
-
-            # scp to files to the local dir        
-            Net::SCP.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ], :port => self.config[ 'ssh_port' ] ) do |scp|
+            begin
 
               # scp to files to the local dir        
-              scp.download!( remote_filename, local_filename )
-              puts "Done.\n\n"
+              Net::SCP.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ], :port => self.config[ 'ssh_port' ] ) do |scp|
 
+                # scp to files to the local dir        
+                scp.download!( remote_filename, local_filename )
+                puts "Done.\n\n"
+
+              end
+
+            rescue Exception => e
+          
+              puts "!! Failed to download #{db} from #{self.config[ 'ssh_host' ]} !!\n\n"
+          
             end
-
-          rescue Exception => e
-          
-            puts "!! Failed to download #{db} from #{self.config[ 'ssh_host' ]} !!\n\n"
-          
-          end
+            
+          end # end of table each
           
           # remove the file now that we have downloaded it
           ssh.exec!( "rm -rf #{remote_filename}" )
       
-        end
+        end # end of db each
     
       end
     

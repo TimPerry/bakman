@@ -100,7 +100,9 @@ class Server
     puts "Backing up remote dir: #{self.config[ 'remote_dir' ]} to #{filestore_loc}...\n\n"
 
     # uses expect + rsync to backup the files
-    cmd = "rsync -az --delete -e 'ssh -p #{self.config[ 'ssh_port' ]} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' #{self.config[ 'ssh_username' ]}@#{self.config[ 'ssh_host' ]}:#{self.config[ 'remote_dir' ]} #{filestore_loc}"
+    cmd = "rsync -azL -e 'ssh -p #{self.config[ 'ssh_port' ]} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' #{self.config[ 'ssh_username' ]}@#{self.config[ 'ssh_host' ]}:#{self.config[ 'remote_dir' ]} #{filestore_loc}"
+
+   puts cmd;
 
     PTY.spawn( cmd ) do | o, i |
             
@@ -116,7 +118,6 @@ class Server
      
     end
 
-      return
     puts "Done.\n"
     puts "Compressing backups...\n\n"
     

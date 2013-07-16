@@ -11,39 +11,61 @@ module Utils
   @@dow = nil;
     
   def self.delete_old_file_backups( server )
-    month = Utils::get_config_option('months_to_keep_backups').months.ago.month
-    filename = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('file_backups_folder_name')}/monthly/#{month}.7z"
-    FileUtils.rm( filename ) if File.exists?( filename )
+
+    date = Utils::get_config_option('months_to_keep_backups').months.ago
+    month = Date::MONTHNAMES[ date.month ].downcase
+    year = date.year
+    
+    filename = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('file_backups_folder_name')}/monthly/#{month}_#{year}.7z"
+
+    if File.exists?( filename )
+      puts "Deleting old backup #{filename}"
+      FileUtils.rm( filename )
+    end
+
   end
   
-  def self.delete_old_db_backups( server, db_name )
-    month = Utils::get_config_option('months_to_keep_backups').months.ago.month
-    filename = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('db_backups_folder_name')}/monthly/#{db_name}/#{db_name}_#{month}.sql.gz"
-    FileUtils.rm( filename ) if File.exists?( filename )
+  def self.delete_old_db_backups( server, db_name, table_name )
+    
+    date = Utils::get_config_option('months_to_keep_backups').months.ago
+    month = Date::MONTHNAMES[ date.month ].downcase
+    year = date.year
+    
+    filename = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('db_backups_folder_name')}/monthly/#{month}_#{year}/#{db_name}/#{table_name}.sql.gz"
+
+    if File.exists?( filename )
+      puts "Deleting old backup #{filename}"
+      FileUtils.rm( filename )
+    end
+
   end
   
-  def self.get_remote_db_filename( db_name )    
-    "/tmp/#{db_name}_#{get_dom}.sql.gz"
+  def self.get_remote_db_filename( table_name, db_name )    
+    "/tmp/#{db_name}_#{table_name}.sql.gz"
   end
   
-  def self.get_local_db_filename( db_name, server, type ='daily' )
-      
-    # create the folder if it doesnt exist
-    folder = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('db_backups_folder_name')}/#{type}/#{db_name}"
-    FileUtils.mkdir_p( folder ) unless File.exists?( folder ) && File.directory?( folder )
+  def self.get_local_db_filename( table_name, db_name, server, type = 'daily' )
+
+    folder = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('db_backups_folder_name')}/#{type}"
 
     case type
     
       when 'daily'
-        return "#{folder}/#{db_name}_#{Utils::get_dow}.sql.gz"
-      
-      when 'weekly'
-        return "#{folder}/#{db_name}_week_#{Utils::get_wom}.sql.gz"
+        folder << "/#{Utils::get_nice_dow}/#{db_name}"
         
+      when 'weekly'
+        folder << "/week_#{Utils::get_wom}/#{db_name}"
+                
       when 'monthly'
-        return "#{folder}/#{db_name}_#{Utils::get_moy}_#{Utils::get_y}.sql.gz"
+        folder << "/#{Utils::get_nice_moy}_#{Utils::get_y}/#{db_name}"
     
     end
+      
+    # create the folder if it doesnt exist
+    FileUtils.mkdir_p( folder ) unless File.exists?( folder ) && File.directory?( folder )
+    
+    # return the full path
+    "#{folder}/#{table_name}.sql.gz"
     
   end
 
@@ -55,13 +77,13 @@ module Utils
     case type
     
       when 'daily'
-        return "#{folder}/#{Utils::get_dow}.7z"
+        return "#{folder}/#{Utils::get_nice_dow}.7z"
       
       when 'weekly'
         return "#{folder}/week_#{Utils::get_wom}.7z"
         
       when 'monthly'
-        return "#{folder}/#{Utils::get_moy}_#{Utils::get_y}.7z"
+        return "#{folder}/#{Utils::get_nice_moy}_#{Utils::get_y}.7z"
     
     end
     
@@ -69,7 +91,7 @@ module Utils
   
   def self.get_filestore_loc( server )
     
-    folder = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('file_backups_folder_name')}/filestore"
+    folder = "#{Utils::get_config_option('backup_loc')}/#{server.name}/#{Utils::get_config_option('file_backups_folder_name')}/#{Utils::get_config_option('file_backups_cache_directory_name')}"
     FileUtils.mkdir_p( folder ) unless File.exists?( folder ) && File.directory?( folder )
     
     folder.strip
@@ -91,6 +113,10 @@ module Utils
     @@moy ||= Time.new.month
   end
   
+  def self.get_nice_moy
+    Date::MONTHNAMES[ Utils::get_moy.to_i ].downcase
+  end
+  
   def self.get_wom
     @@wom ||= ( Time.new.day / 7 ).ceil
   end
@@ -101,6 +127,10 @@ module Utils
   
   def self.get_dow
      @@dow ||= Time.new.wday
+  end
+  
+  def self.get_nice_dow
+    Date::DAYNAMES[ Utils::get_dow.to_i ].downcase
   end
   
   # gets the config option if it exists

@@ -69,7 +69,8 @@ class Server
               Utils::delete_old_db_backups( self, db, table )
         
               # get mysql to dump the database to file
-              ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} --single-transaction | gzip  > #{remote_filename}" )
+              puts( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} #{table} --single-transaction | gzip  > #{remote_filename}" )
+              #ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} #{table} --single-transaction | gzip  > #{remote_filename}" )
         
               puts "Downloading #{remote_filename} from #{self.config[ 'ssh_host' ]} to #{local_filename}...\n"
         
@@ -86,7 +87,7 @@ class Server
 
               rescue Exception => e
           
-                puts "!! Failed to get table listings for #{db} from #{self.config[ 'ssh_host' ]} !!\n\n"
+                puts "!! Failed to get table listings for #{db} from #{self.config[ 'ssh_host' ]} error: #{e} !!\n\n"
           
               end
             
@@ -97,7 +98,7 @@ class Server
             
           rescue Exception => e #table begin
       
-            puts "!! Failed to download #{db} from #{self.config[ 'ssh_host' ]} !!\n\n"
+            puts "!! Failed to download #{db} from #{self.config[ 'ssh_host' ]}, error: #{e} !!\n\n"
       
           end
           

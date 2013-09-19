@@ -69,8 +69,7 @@ class Server
               Utils::delete_old_db_backups( self, db, table )
         
               # get mysql to dump the database to file
-              puts( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} #{table} --single-transaction | gzip  > #{remote_filename}" )
-              #ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} #{table} --single-transaction | gzip  > #{remote_filename}" )
+              ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} #{table} --single-transaction | gzip  > #{remote_filename}" )
         
               puts "Downloading #{remote_filename} from #{self.config[ 'ssh_host' ]} to #{local_filename}...\n"
         

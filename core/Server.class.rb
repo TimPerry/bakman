@@ -32,11 +32,11 @@ class Server
     begin    
      
       Net::SSH.start( self.config[ 'ssh_host' ], self.config[ 'ssh_username' ], :password => self.config['ssh_password' ], :port => self.config[ 'ssh_port' ] ) do | ssh |
-	
+
         # get a list of the databases on the server
-        databases = ssh.exec!( "mysql -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} --execute='show databases' | awk '{ print $1 }' | sed 1d" )
+        databases = ssh.exec!( "mysql -h '#{self.config[ 'db_host' ]}' -u '#{self.config[ 'db_username' ]}' -p'#{self.config[ 'db_password' ]}' --execute='show databases' | awk '{ print $1 }' | sed 1d" )
         databases = databases.split( /\r?\n/ )
-          
+
         # loop each db
         databases.each do | db |
           
@@ -46,7 +46,7 @@ class Server
           begin
           
             # get the tables
-            tables = ssh.exec!( "mysql -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} --execute='show tables from #{db}' | awk '{ print $1 }' | sed 1d" )
+            tables = ssh.exec!( "mysql -h '#{self.config[ 'db_host' ]}' -u '#{self.config[ 'db_username' ]}' -p'#{self.config[ 'db_password' ]}' --execute='show tables from #{db}' | awk '{ print $1 }' | sed 1d" )
             tables = tables.split( /\r?\n/ )
           
             tables.each do | table |
@@ -69,7 +69,7 @@ class Server
               Utils::delete_old_db_backups( self, db, table )
         
               # get mysql to dump the database to file
-              ssh.exec!( "mysqldump -u #{self.config[ 'db_username' ]} -p#{self.config[ 'db_password' ]} #{db} #{table} --single-transaction | gzip  > #{remote_filename}" )
+              ssh.exec!( "mysqldump -h '#{self.config[ 'db_host' ]}' -u '#{self.config[ 'db_username' ]}' -p'#{self.config[ 'db_password' ]}' '#{db}' '#{table}' --single-transaction | gzip  > #{remote_filename}" )
         
               puts "Downloading #{remote_filename} from #{self.config[ 'ssh_host' ]} to #{local_filename}...\n"
         

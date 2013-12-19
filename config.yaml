@@ -1,7 +1,0 @@
-backup_loc: /backups
-db_backups_folder_name: db_files
-file_backups_folder_name: files
-file_backups_cache_directory_name: filestore
-should_backup_files: true
-should_backup_databases: true
-months_to_keep_backups: 6

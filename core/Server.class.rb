@@ -153,8 +153,8 @@ class Server
     begin
     
       # zip up the files
-      puts "7za u -t7z -mnt #{daily_filename} #{filestore_loc}/*"
-      system( "7za u -t7z -mmt #{daily_filename} #{filestore_loc}/*")
+      puts "7za u #{daily_filename} -uq0 -ms=off #{filestore_loc}/*"
+      system( "7za u #{daily_filename} -uq0 -ms=off #{filestore_loc}/*")
       
       # first of month - create a copy
       FileUtils.cp( daily_filename, monthly_filename ) if Utils::get_dom == 1

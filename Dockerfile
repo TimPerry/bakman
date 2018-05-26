@@ -8,6 +8,6 @@ WORKDIR /bakman
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
-COPY . .
+COPY . /bakman
 
-CMD "ruby run_backup.rb"
+CMD "ruby /bakman/run_backup.rb"

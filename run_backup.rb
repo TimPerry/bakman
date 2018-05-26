@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 abort( "Bakman only runs on ruby 1.9+, please update Ruby" ) unless RUBY_VERSION >= '1.9'
 
 # abort unless all the dependencies are installed
@@ -13,9 +11,7 @@ begin
   gem 'activesupport'
 
 rescue Exception => e
-
-  abort( "Dependencies not installed please run the install script.\nSimply run ./INSTALL" )
-
+  puts "Something went wrong when trying to load. This could be that the dependencies are not correclty installed. More details: #{e}"
 end
 
 begin
@@ -36,6 +32,6 @@ begin
 
 rescue Exception => e
 
-  puts "#{e}"
+  puts "Something went wrong, details: #{e}"
 
 end

@@ -1,0 +1,8 @@
+some_server_name:
+  ssh_username: bakman
+  ssh_password: password
+  ssh_port: 22
+  ssh_host: 123.123.123.123
+  remote_dir: /var/www/
+  db_username: bakman
+  db_password: password

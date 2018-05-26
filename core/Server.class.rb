@@ -86,7 +86,7 @@ class Server
 
               rescue Exception => e
           
-                puts "!! Failed to get table listings for #{db} from #{self.config[ 'ssh_host' ]} error: #{e} !!\n\n"
+                puts "Failed to get table listings for #{db} from #{self.config[ 'ssh_host' ]} error: #{e} !!\n\n"
           
               end
             
@@ -97,7 +97,7 @@ class Server
             
           rescue Exception => e #table begin
       
-            puts "!! Failed to download #{db} from #{self.config[ 'ssh_host' ]}, error: #{e} !!\n\n"
+            puts "Failed to download #{db} from #{self.config[ 'ssh_host' ]}, error: #{e} !!\n\n"
       
           end
           
@@ -141,8 +141,8 @@ class Server
         i.puts "#{self.config[ 'ssh_password' ]}\r\n"
         o.readlines
 
-      rescue Errno::EIO
-        #puts "IO Error occored"
+      rescue Exception => e
+        puts "Login rsync error: #{e}"
       end
      
     end
@@ -168,12 +168,12 @@ class Server
       puts "Done.\n"
     
     rescue Exception => e
-          
-      puts "Failed to compress, install 7zip please!\n\n";
+      
+      puts "Failed to compress you might not have installed 7zip. More details: #{e}\n\n";
       puts "OSX: brew install p7zip\n"
       puts "YUM: yum install p7zip\n"
       puts "APT: apt-get install p7zip\n"
-          
+
     end
     
   end

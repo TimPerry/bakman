@@ -1,0 +1,7 @@
+should_backup_databases: true
+should_backup_files: true
+months_to_keep_backups: 3
+backup_loc: backups
+db_backups_folder_name: db
+file_backups_folder_name: files
+file_backups_cache_directory_name: tmp

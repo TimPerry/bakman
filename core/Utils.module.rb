@@ -148,18 +148,12 @@ module Utils
     
   # gets the main config
   def self.get_config
-    
     begin
-      
       YAML.load( File.read( "config.yaml" ) )
-
     rescue Exception => e
-      
-      puts "Failed to load config file, invalid configuration please remember to use 2 spaces and not tabs!"
+      puts "Failed to load config file config.yaml, invalid configuration please remember to use 2 spaces and not tabs!"
       exit
-      
     end
-    
   end
   
 end

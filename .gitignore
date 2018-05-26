@@ -1,4 +1,4 @@
 servers.yaml
+config.yaml
 .*
 bakman.pid
-Gemfile.lock

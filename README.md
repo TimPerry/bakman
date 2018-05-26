@@ -5,7 +5,7 @@ Backman is a website backup tool written in ruby. It can backup remote mysql ser
 
 Use the docker image from dockerhub:
 ```
-docker run --rm --interactive --tty --volume $PWD/backups:/backups config.yaml:/bakman/config.yaml servers.yaml:/backman/servers.yaml timperry/bakman
+docker run --rm --interactive --tty --volume backups:/backups --volume config.yaml:/bakman/config.yaml --volume servers.yaml:/backman/servers.yaml timkinbokeh/bakman
 ```
 
 An example config.yaml file:

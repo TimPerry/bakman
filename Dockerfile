@@ -10,4 +10,4 @@ RUN bundle install
 
 COPY . .
 
-CMD "/bakman/run_backup.rb"
+CMD "ruby run_backup.rb"

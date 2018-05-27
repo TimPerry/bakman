@@ -50,24 +50,15 @@ class Server
             tables = tables.split( /\r?\n/ )
           
             tables.each do | table |
-          
+ 
               # get out files names
               local_filename =  Utils::get_local_db_filename( table, db, self )
               remote_filename = Utils::get_remote_db_filename( table, db )
-          
+
               # backup the backup
               weekly_filename = Utils::get_local_db_filename( table, db, self, 'weekly' )
               monthly_filename = Utils::get_local_db_filename( table, db, self, 'monthly' )
-          
-              # first of month - create a copy
-              FileUtils.cp( local_filename, monthly_filename ) if Utils::get_dom == 1
-    
-              # its a sunday - create a copy
-              FileUtils.cp( local_filename, weekly_filename ) if Utils::get_dow == 0
-      
-              # Delete older backups
-              Utils::delete_old_db_backups( self, db, table )
-        
+         
               # get mysql to dump the database to file
               ssh.exec!( "mysqldump -h '#{self.config[ 'db_host' ]}' -u '#{self.config[ 'db_username' ]}' -p'#{self.config[ 'db_password' ]}' '#{db}' '#{table}' --single-transaction | gzip  > #{remote_filename}" )
         
@@ -80,9 +71,27 @@ class Server
 
                   # scp to files to the local dir        
                   scp.download!( remote_filename, local_filename )
-                  puts "Done.\n\n"
+                  puts "Done downloading file.\n\n"
 
                 end
+
+                # first of month - create a copy
+                if Utils::get_dom == 1
+                  puts "First of month, creating month copy"
+                  FileUtils.cp( local_filename, monthly_filename ) 
+                end
+      
+                # its a sunday - create a copy
+                if Utils::get_dow == 0
+                  puts "Its a Sunday, creating week copy"
+                  FileUtils.cp( local_filename, weekly_filename )
+                end
+        
+                # Delete older backups
+                puts "Deleting old backups"
+                Utils::delete_old_db_backups( self, db, table )
+
+                puts "Backup of #{db} finished"
 
               rescue Exception => e
           

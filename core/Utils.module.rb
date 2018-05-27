@@ -152,7 +152,7 @@ module Utils
       YAML.load( File.read( "config.yaml" ) )
     rescue Exception => e
       puts "Failed to load config file config.yaml, invalid configuration please remember to use 2 spaces and not tabs!"
-      exit
+      exit 1
     end
   end
   

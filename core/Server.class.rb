@@ -71,7 +71,7 @@ class Server
 
                   # scp to files to the local dir        
                   scp.download!( remote_filename, local_filename )
-                  puts "Done downloading file"
+                  puts "Done downloading file.\n\n"
 
                 end
 
@@ -91,11 +91,12 @@ class Server
                 puts "Deleting old backups"
                 Utils::delete_old_db_backups( self, db, table )
 
-                puts "Backup of #{db} finished\n\n"
+                puts "Backup of #{db} finished"
 
               rescue Exception => e
           
                 puts "Failed to get table listings for #{db} from #{self.config[ 'ssh_host' ]} error: #{e} !!\n\n"
+                exit 1
           
               end
             
@@ -107,6 +108,7 @@ class Server
           rescue Exception => e #table begin
       
             puts "Failed to download #{db} from #{self.config[ 'ssh_host' ]}, error: #{e} !!\n\n"
+            exit 1
       
           end
           
@@ -117,6 +119,7 @@ class Server
     rescue Exception => e
 
       puts "#{e}Failed to connect to #{self.config[ 'ssh_host' ]}"
+      exit 1
           
     end
   
@@ -182,6 +185,8 @@ class Server
       puts "OSX: brew install p7zip\n"
       puts "YUM: yum install p7zip\n"
       puts "APT: apt-get install p7zip\n"
+
+      exit 1
 
     end
     

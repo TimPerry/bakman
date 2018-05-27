@@ -34,7 +34,7 @@ class Bakman
     rescue Exception => e
       
       puts "Failed to load servers list, invalid configuration please remember to use 2 spaces and not tabs!"
-      exit
+      exit 1
       
     end
     

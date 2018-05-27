@@ -71,7 +71,7 @@ class Server
 
                   # scp to files to the local dir        
                   scp.download!( remote_filename, local_filename )
-                  puts "Done downloading file.\n\n"
+                  puts "Done downloading file"
 
                 end
 
@@ -91,7 +91,7 @@ class Server
                 puts "Deleting old backups"
                 Utils::delete_old_db_backups( self, db, table )
 
-                puts "Backup of #{db} finished"
+                puts "Backup of #{db} finished\n\n"
 
               rescue Exception => e
           
